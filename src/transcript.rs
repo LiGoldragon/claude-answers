@@ -13,7 +13,8 @@ use crate::error::{Error, Result};
 
 /// The `~/.claude/projects/<encoded-cwd>` directory holding a project's
 /// session transcripts. Claude Code encodes the working directory by
-/// replacing every path separator with `-`.
+/// replacing every non-alphanumeric character with `-`, preserving case;
+/// so `/git/github.com/Li/x` becomes `-git-github-com-Li-x`.
 pub struct ProjectDirectory {
     path: PathBuf,
 }
@@ -28,7 +29,17 @@ impl ProjectDirectory {
 
     /// Pure resolver: the transcript directory for `home` and `working_directory`.
     pub fn locate(home: &Path, working_directory: &Path) -> Self {
-        let encoded = working_directory.to_string_lossy().replace('/', "-");
+        let encoded: String = working_directory
+            .to_string_lossy()
+            .chars()
+            .map(|character| {
+                if character.is_ascii_alphanumeric() {
+                    character
+                } else {
+                    '-'
+                }
+            })
+            .collect();
         let path = home.join(".claude").join("projects").join(encoded);
         Self { path }
     }

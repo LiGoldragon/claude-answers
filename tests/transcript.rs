@@ -11,12 +11,18 @@ fn fixture_transcript() -> Transcript {
 }
 
 #[test]
-fn locate_encodes_the_working_directory_with_dashes() {
-    let project = ProjectDirectory::locate(Path::new("/home/li"), Path::new("/home/li/primary"));
+fn locate_replaces_every_nonalphanumeric_character_with_a_dash() {
+    // Claude Code encodes the cwd by replacing every non-alphanumeric
+    // character (not just `/`) with `-`, preserving case. A slash-only
+    // encoding would leave the `.` in `github.com` and miss the directory.
+    let project = ProjectDirectory::locate(
+        Path::new("/home/li"),
+        Path::new("/git/github.com/LiGoldragon/claude-answers"),
+    );
     assert!(
         project
             .path()
-            .ends_with(".claude/projects/-home-li-primary")
+            .ends_with(".claude/projects/-git-github-com-LiGoldragon-claude-answers")
     );
 }
 

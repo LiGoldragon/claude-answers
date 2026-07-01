@@ -33,8 +33,8 @@ match the question, the chosen option, or the notes.
 ## What it reads
 
 Transcripts live under `~/.claude/projects/<encoded-cwd>/<session>.jsonl`,
-where `<encoded-cwd>` is the working directory with every `/` replaced by `-`.
-The tool is strictly read-only.
+where `<encoded-cwd>` is the working directory with every non-alphanumeric
+character replaced by `-` (case preserved). The tool is strictly read-only.
 
 ## Build
 
