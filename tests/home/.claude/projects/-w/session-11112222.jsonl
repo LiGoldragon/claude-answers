@@ -1,0 +1,3 @@
+{"type":"user","timestamp":"2026-07-01T09:33:53.590Z","toolUseResult":{"questions":[{"question":"When your Bluetooth mic drops mid-recording, what should happen?"}],"answers":{"When your Bluetooth mic drops mid-recording, what should happen?":"(notes only)"},"annotations":{"When your Bluetooth mic drops mid-recording, what should happen?":{"notes":"Use an active recording journal on disk.\nWrite each captured chunk immediately."}}}}
+{"type":"assistant","uuid":"noise","message":{"role":"assistant","content":[{"type":"text","text":"Here are some notes about your recording."}]}}
+{"type":"user","timestamp":"2026-07-01T10:00:00.000Z","toolUseResult":{"answers":{"What should the repo be named?":"claude-answers"},"annotations":{}}}
