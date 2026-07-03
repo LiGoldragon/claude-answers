@@ -16,7 +16,7 @@ name = "claude-answers"
 path = "src/main.rs"
 
 [dependencies]
-nota = { git = "https://github.com/LiGoldragon/nota-next.git", branch = "main" }
+nota = { git = "https://github.com/LiGoldragon/nota.git", branch = "main" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
