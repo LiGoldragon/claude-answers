@@ -1,7 +1,5 @@
 # Agent instructions — claude-answers
 
-You **MUST** read AGENTS.md at `github:LiGoldragon/lore` — the workspace contract.
-
 ## Repo role
 
 A tiny read-only CLI that recalls your answers to Claude Code's
