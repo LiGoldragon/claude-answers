@@ -9,7 +9,7 @@ back and prints question, option, and notes so you can copy an earlier answer.
 
 ## Role
 
-The single command-line argument is one NOTA record, decoded via the `nota`
+The single command-line argument is one DOTOS record, decoded via the `dotos`
 crate into a `Query`. Everything else — locating transcripts, reading them,
 filtering, rendering — hangs off that decoded value. No daemon, no state, no
 writes.
@@ -18,7 +18,7 @@ writes.
 
 Owns:
 
-- Decoding the NOTA argument into a `Query`, and treating `Grep` as a
+- Decoding the DOTOS argument into a `Query`, and treating `Grep` as a
   transparent filter over any selection (`src/query.rs`).
 - Locating a project's transcript directory from the working directory
   (`ProjectDirectory`, `src/transcript.rs`).
@@ -32,17 +32,17 @@ Does not own:
   subset (`toolUseResult.answers` and `toolUseResult.annotations`) and skips
   any line it does not recognise.
 - Writing or mutating transcripts. It is strictly read-only.
-- The NOTA grammar and codec. The `nota` crate owns those.
+- The DOTOS grammar and codec. The `dotos` crate owns those.
 
 ## Argument grammar
 
 ```text
 Latest                                   newest transcript in this project (default)
 All                                      every transcript in this project
-(Session 47318657)                       transcripts whose file name holds the id
-(File /path/to.jsonl)                    one explicit transcript file
-(Grep (All Bluetooth))                   any selection, filtered by text
-(Grep ((Session 47318657) [two words]))  bracket-quote multi-word filter text
+Session.47318657                         transcripts whose file name holds the id
+File./path/to.jsonl                      one explicit transcript file
+Grep.{All Bluetooth}                     any selection, filtered by text
+Grep.{Session.47318657 (two words)}      parenthesis-quote multi-word filter text
 ```
 
 `Grep` wraps another query: it narrows which answers print without changing
@@ -53,8 +53,8 @@ filter. With no argument the tool behaves as `Latest`.
 
 ```
 src/
-├── main.rs        — CLI entry: read one NOTA argument (or default Latest), run, print
-├── query.rs       — Query: the NOTA argument surface; selection + filter + run
+├── main.rs        — CLI entry: read one DOTOS argument (or default Latest), run, print
+├── query.rs       — Query: the DOTOS argument surface; selection + filter + run
 ├── transcript.rs  — ProjectDirectory, Transcript, Answer: locate, read, render
 └── error.rs       — typed Error + Result
 ```
@@ -63,5 +63,5 @@ src/
 
 **M0.** Feature parity with the original throwaway Python extractor: session
 selection (latest / all / id fragment / explicit file), a case-insensitive
-filter, and question + option + notes output — re-expressed with a NOTA
-argument decoded by the `nota` crate.
+filter, and question + option + notes output — re-expressed with a DOTOS
+argument decoded by the `dotos` crate.

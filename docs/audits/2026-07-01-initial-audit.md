@@ -7,7 +7,7 @@ what was deliberately deferred, so the open items can be revisited later.
 ## Scope
 
 - Rust crate audit: the `claude-answers` crate at commit `a7c4146d` (correctness,
-  Rust discipline, NOTA schema, edge cases, tests).
+  Rust discipline, DOTOS schema, edge cases, tests).
 - Nix / deploy audit: `flake.nix`, the CriomOS-home wiring (flake input +
   `modules/home/profiles/med/cli-tools.nix`), and the `ouranos` home deploy.
 

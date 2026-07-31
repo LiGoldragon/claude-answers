@@ -1,4 +1,4 @@
-//! Decoding the NOTA argument and running a query against a fixture project.
+//! Decoding the DOTOS argument and running a query against a fixture project.
 
 use std::path::{Path, PathBuf};
 
@@ -30,7 +30,7 @@ fn all_parses_from_a_bare_atom() {
 #[test]
 fn session_parses_with_an_id_fragment() {
     assert_eq!(
-        Query::parse("(Session 47318657)").unwrap(),
+        Query::parse("Session.47318657").unwrap(),
         Query::Session("47318657".to_owned())
     );
 }
@@ -38,7 +38,7 @@ fn session_parses_with_an_id_fragment() {
 #[test]
 fn file_parses_with_a_path() {
     assert_eq!(
-        Query::parse("(File /home/li/x.jsonl)").unwrap(),
+        Query::parse("File./home/li/x.jsonl").unwrap(),
         Query::File("/home/li/x.jsonl".to_owned())
     );
 }
@@ -46,15 +46,15 @@ fn file_parses_with_a_path() {
 #[test]
 fn grep_wraps_a_selection() {
     assert_eq!(
-        Query::parse("(Grep (All Bluetooth))").unwrap(),
+        Query::parse("Grep.{All Bluetooth}").unwrap(),
         Query::Grep(Box::new(Query::All), "Bluetooth".to_owned())
     );
 }
 
 #[test]
-fn grep_takes_bracketed_multiword_text() {
+fn grep_takes_parenthesized_multiword_text() {
     assert_eq!(
-        Query::parse("(Grep ((Session 47318657) [Bluetooth adapter]))").unwrap(),
+        Query::parse("Grep.{Session.47318657 (Bluetooth adapter)}").unwrap(),
         Query::Grep(
             Box::new(Query::Session("47318657".to_owned())),
             "Bluetooth adapter".to_owned()
@@ -72,7 +72,7 @@ fn all_prints_every_answer_with_a_count_footer() {
 
 #[test]
 fn grep_keeps_only_matching_answers() {
-    let output = render(&Query::parse("(Grep (All Bluetooth))").unwrap());
+    let output = render(&Query::parse("Grep.{All Bluetooth}").unwrap());
     assert!(output.contains("Bluetooth mic drops"));
     assert!(!output.contains("What should the repo be named?"));
     assert!(output.contains("# ^ 1 answer(s) in"));

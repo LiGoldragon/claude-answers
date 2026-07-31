@@ -1,27 +1,27 @@
-//! The command-line argument surface: one NOTA record decoded into a [`Query`].
+//! The command-line argument surface: one DOTOS record decoded into a [`Query`].
 
 use std::io::Write;
 use std::path::PathBuf;
 
-use nota::{NotaDecode, NotaEncode, NotaSource};
+use dotos::{DotosDecode, DotosEncode, DotosSource};
 
 use crate::error::Result;
 use crate::transcript::{ProjectDirectory, Transcript};
 
-/// The `claude-answers` argument, given as a single NOTA record.
+/// The `claude-answers` argument, given as a single DOTOS record.
 ///
 /// ```text
 /// Latest                                   newest transcript in this project
 /// All                                      every transcript in this project
-/// (Session 47318657)                       transcripts whose file name holds the id
-/// (File /path/to.jsonl)                    one explicit transcript file
-/// (Grep (All Bluetooth))                   any of the above, filtered by text
-/// (Grep ((Session 47318657) [two words]))  bracket-quote multi-word filter text
+/// Session.47318657                         transcripts whose file name holds the id
+/// File./path/to.jsonl                      one explicit transcript file
+/// Grep.{All Bluetooth}                     any of the above, filtered by text
+/// Grep.{Session.47318657 (two words)}      parenthesis-quote multi-word filter text
 /// ```
 ///
 /// `Grep` wraps another query: it narrows which answers print without changing
 /// which transcripts are read, and it composes, so nested `Grep`s all apply.
-#[derive(NotaDecode, NotaEncode, Debug, Clone, PartialEq, Eq)]
+#[derive(DotosDecode, DotosEncode, Debug, Clone, PartialEq, Eq)]
 pub enum Query {
     Latest,
     All,
@@ -31,9 +31,9 @@ pub enum Query {
 }
 
 impl Query {
-    /// Decode one NOTA argument token into a query.
+    /// Decode one DOTOS argument token into a query.
     pub fn parse(argument: &str) -> Result<Self> {
-        Ok(NotaSource::new(argument).parse::<Query>()?)
+        Ok(DotosSource::new(argument).parse::<Query>()?)
     }
 
     /// Read every selected transcript, print each answer that passes every

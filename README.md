@@ -11,20 +11,20 @@ session (and without spending its context).
 
 ## Usage
 
-The single argument is one NOTA record:
+The single argument is one DOTOS record:
 
 ```
 claude-answers                          # newest transcript in this project
 claude-answers All                      # every transcript in this project
-claude-answers '(Session 47318657)'     # transcripts whose name holds the id
-claude-answers '(File /path/to.jsonl)'  # one explicit transcript file
-claude-answers '(Grep (All Bluetooth))' # any selection, filtered by text
+claude-answers Session.47318657         # transcripts whose name holds the id
+claude-answers File./path/to.jsonl      # one explicit transcript file
+claude-answers 'Grep.{All Bluetooth}'   # any selection, filtered by text
 ```
 
-Multi-word filter text is bracket-quoted:
+Multi-word filter text is parenthesis-quoted:
 
 ```
-claude-answers '(Grep ((Session 47318657) [Bluetooth adapter]))'
+claude-answers 'Grep.{Session.47318657 (Bluetooth adapter)}'
 ```
 
 With no argument it behaves as `Latest`. Filters are case-insensitive and

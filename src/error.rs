@@ -20,8 +20,8 @@ pub enum Error {
         directory: PathBuf,
     },
 
-    #[error("invalid NOTA argument: {0}")]
-    Argument(#[from] nota::NotaDecodeError),
+    #[error("invalid DOTOS argument: {0}")]
+    Argument(#[from] dotos::DotosDecodeError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

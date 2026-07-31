@@ -6,7 +6,7 @@
 //! under `~/.claude/projects/<encoded-cwd>/<session>.jsonl`; this crate reads
 //! them back.
 //!
-//! The single command-line argument is one NOTA record decoded into [`Query`];
+//! The single command-line argument is one DOTOS record decoded into [`Query`];
 //! see its documentation for the argument grammar.
 
 pub mod error;

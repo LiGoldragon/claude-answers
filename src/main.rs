@@ -3,11 +3,11 @@
 //! Usage:
 //!   claude-answers                          newest transcript in this project
 //!   claude-answers All                      every transcript in this project
-//!   claude-answers '(Session 47318657)'     transcripts matching an id fragment
-//!   claude-answers '(File /path/to.jsonl)'  one explicit transcript file
-//!   claude-answers '(Grep (All Bluetooth))' filter answers by text
+//!   claude-answers Session.47318657          transcripts matching an id fragment
+//!   claude-answers File./path/to.jsonl       one explicit transcript file
+//!   claude-answers 'Grep.{All Bluetooth}'    filter answers by text
 //!
-//! The argument is a single NOTA record decoded into a `Query`; with no
+//! The argument is a single DOTOS record decoded into a `Query`; with no
 //! argument the newest transcript is shown (as if `Latest` were given).
 
 use std::io::Write;
