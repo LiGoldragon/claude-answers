@@ -14,3 +14,9 @@ argument is a DOTOS record decoded via the `dotos` crate into a `Query`.
   skip anything unrecognised; do not hard-fail on an unexpected line.
 - The argument grammar lives on the `Query` enum in `src/query.rs`. Keep the
   DOTOS doc there, in `ARCHITECTURE.md`, and in `README.md` in step.
+
+## Protos estate status
+
+Stack: correct-new destination
+Status: active component, current checkout legacy-wired
+This checkout is not proof of correct-new adoption.
