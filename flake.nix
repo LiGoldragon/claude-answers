@@ -1,5 +1,5 @@
 {
-  description = "Recall your answers to Claude Code's questions from session transcripts";
+  description = "Recall your answers to Claude Code's questions from session transcripts through a typed Datomic query";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -20,11 +20,14 @@
         };
 
         inherit (rust) craneLib toolchain;
-        # Keep transcript `.jsonl` test fixtures in the build sandbox; crane's
-        # default filter strips non-Rust files, which breaks the fixture tests.
+        # Keep transcript fixtures and the authored Ethos map in the build
+        # sandbox; crane's default filter strips these non-Rust inputs.
         src = rust.cleanSource {
           root = ./.;
-          extraFilters = [ (path: _type: pkgs.lib.hasSuffix ".jsonl" path) ];
+          extraFilters = [
+            (path: _type: pkgs.lib.hasSuffix ".jsonl" path)
+            (path: _type: pkgs.lib.hasSuffix ".ethos" path)
+          ];
         };
         commonArgs = {
           inherit src;
@@ -37,9 +40,27 @@
           inherit cargoArtifacts;
         });
 
-        checks.default = craneLib.cargoTest (commonArgs // {
-          inherit cargoArtifacts;
-        });
+        checks = {
+          build = craneLib.cargoBuild (commonArgs // {
+            inherit cargoArtifacts;
+          });
+          test = craneLib.cargoTest (commonArgs // {
+            inherit cargoArtifacts;
+          });
+          doc = craneLib.cargoDoc (commonArgs // {
+            inherit cargoArtifacts;
+            RUSTDOCFLAGS = "-D warnings";
+          });
+          fmt = craneLib.cargoFmt { inherit src; };
+          clippy = craneLib.cargoClippy (commonArgs // {
+            inherit cargoArtifacts;
+            cargoClippyExtraArgs = "--all-targets -- -D warnings";
+          });
+          ethos-source = pkgs.runCommand "claude-answers-ethos-source" { } ''
+            test -f ${src}/claude-answers.ethos
+            touch "$out"
+          '';
+        };
 
         devShells.default = pkgs.mkShell {
           name = "claude-answers";

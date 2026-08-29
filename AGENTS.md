@@ -4,7 +4,7 @@
 
 A tiny read-only CLI that recalls your answers to Claude Code's
 AskUserQuestion prompts from the on-disk session transcripts. Its single
-argument is a DOTOS record decoded via the `dotos` crate into a `Query`.
+argument is a typed Datomic value embodied as a `Query`.
 
 ## Carve-outs worth knowing
 
@@ -12,8 +12,9 @@ argument is a DOTOS record decoded via the `dotos` crate into a `Query`.
   writes to a transcript.
 - The transcript format belongs to Claude Code. Parse a tolerant subset and
   skip anything unrecognised; do not hard-fail on an unexpected line.
-- The argument grammar lives on the `Query` enum in `src/query.rs`. Keep the
-  DOTOS doc there, in `ARCHITECTURE.md`, and in `README.md` in step.
+- The argument grammar and checked recursive data anatomy live on `Query` in
+  `src/query.rs`. Keep its documentation, `ARCHITECTURE.md`, and `README.md`
+  in step with the authored Ethos map.
 
 ## Protos estate status
 

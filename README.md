@@ -11,7 +11,7 @@ session (and without spending its context).
 
 ## Usage
 
-The single argument is one DOTOS record:
+The single argument is one typed Datomic query:
 
 ```
 claude-answers                          # newest transcript in this project
@@ -21,14 +21,15 @@ claude-answers File./path/to.jsonl      # one explicit transcript file
 claude-answers 'Grep.{All Bluetooth}'   # any selection, filtered by text
 ```
 
-Multi-word filter text is parenthesis-quoted:
+Multi-word filter text is curly-quote delimited:
 
 ```
-claude-answers 'Grep.{Session.47318657 (Bluetooth adapter)}'
+claude-answers 'Grep.{Session.47318657 “Bluetooth adapter”}'
 ```
 
 With no argument it behaves as `Latest`. Filters are case-insensitive and
-match the question, the chosen option, or the notes.
+match the question, the chosen option, or the notes. The parenthesized text
+form is also accepted on input; Datomic textualization emits curly quotes.
 
 ## What it reads
 

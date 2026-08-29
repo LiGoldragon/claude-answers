@@ -1,8 +1,9 @@
-//! Decoding the DOTOS argument and running a query against a fixture project.
+//! Embodying the Datomic argument and running a query against a fixture project.
 
 use std::path::{Path, PathBuf};
 
 use claude_answers::{ProjectDirectory, Query};
+use datomic::{Datomic, Text, TextEdge};
 
 fn fixture_project() -> ProjectDirectory {
     // The fixture lives at tests/home/.claude/projects/-w/, i.e. home =
@@ -19,7 +20,11 @@ fn render(query: &Query) -> String {
 
 #[test]
 fn latest_parses_from_a_bare_atom() {
-    assert_eq!(Query::parse("Latest").unwrap(), Query::Latest);
+    let query = Text::<Query>::from("Latest")
+        .embody()
+        .expect("the public Datomic text edge embodies Latest");
+    assert_eq!(query, Query::Latest);
+    assert_eq!(query.textualize().as_ref(), "Latest");
 }
 
 #[test]
@@ -31,7 +36,7 @@ fn all_parses_from_a_bare_atom() {
 fn session_parses_with_an_id_fragment() {
     assert_eq!(
         Query::parse("Session.47318657").unwrap(),
-        Query::Session("47318657".to_owned())
+        Query::session("47318657").expect("representable session fragment")
     );
 }
 
@@ -39,7 +44,7 @@ fn session_parses_with_an_id_fragment() {
 fn file_parses_with_a_path() {
     assert_eq!(
         Query::parse("File./home/li/x.jsonl").unwrap(),
-        Query::File("/home/li/x.jsonl".to_owned())
+        Query::file("/home/li/x.jsonl").expect("representable transcript path")
     );
 }
 
@@ -47,7 +52,7 @@ fn file_parses_with_a_path() {
 fn grep_wraps_a_selection() {
     assert_eq!(
         Query::parse("Grep.{All Bluetooth}").unwrap(),
-        Query::Grep(Box::new(Query::All), "Bluetooth".to_owned())
+        Query::grep(Query::All, "Bluetooth").expect("representable filter")
     );
 }
 
@@ -55,10 +60,11 @@ fn grep_wraps_a_selection() {
 fn grep_takes_parenthesized_multiword_text() {
     assert_eq!(
         Query::parse("Grep.{Session.47318657 (Bluetooth adapter)}").unwrap(),
-        Query::Grep(
-            Box::new(Query::Session("47318657".to_owned())),
-            "Bluetooth adapter".to_owned()
+        Query::grep(
+            Query::session("47318657").expect("representable session fragment"),
+            "Bluetooth adapter",
         )
+        .expect("representable filter")
     );
 }
 
@@ -88,7 +94,8 @@ fn latest_reads_the_single_fixture_transcript() {
 fn explicit_file_reads_that_transcript() {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/home/.claude/projects/-w/session-11112222.jsonl");
-    let query = Query::File(path.to_string_lossy().into_owned());
+    let query =
+        Query::file(path.to_string_lossy().into_owned()).expect("fixture path is representable");
     let mut buffer = Vec::new();
     query.run(&fixture_project(), &mut buffer).unwrap();
     assert!(

@@ -20,8 +20,14 @@ pub enum Error {
         directory: PathBuf,
     },
 
-    #[error("invalid DOTOS argument: {0}")]
-    Argument(#[from] dotos::DotosDecodeError),
+    #[error("invalid Datomic argument: {0:?}")]
+    Argument(datomic::Fault),
+}
+
+impl From<datomic::Fault> for Error {
+    fn from(fault: datomic::Fault) -> Self {
+        Self::Argument(fault)
+    }
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

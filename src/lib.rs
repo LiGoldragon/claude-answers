@@ -6,13 +6,13 @@
 //! under `~/.claude/projects/<encoded-cwd>/<session>.jsonl`; this crate reads
 //! them back.
 //!
-//! The single command-line argument is one DOTOS record decoded into [`Query`];
-//! see its documentation for the argument grammar.
+//! The single command-line argument is one typed Datomic value embodied as a
+//! [`Query`]; see its documentation for the argument grammar.
 
 pub mod error;
 pub mod query;
 pub mod transcript;
 
 pub use error::{Error, Result};
-pub use query::Query;
+pub use query::{Query, QueryText};
 pub use transcript::{Answer, ProjectDirectory, Transcript};

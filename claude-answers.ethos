@@ -1,0 +1,13 @@
+Schema.{0 1 0}
+[]
+Types.[
+  Query.[
+    Latest
+    All
+    Session.String
+    File.String
+    Grep.{selection.Box<Query> needle.String}
+  ]
+]
+Kinds.[Datomic.{embody.[Result<Self Fault>] portion.[Portion] textualize.[Text<Self>]}]
+Associations.[]
