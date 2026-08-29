@@ -17,6 +17,9 @@ Version 0.3.0 is a breaking data-boundary release.
 
 The recursive `Grep` data anatomy is checked D3 in `src/query.rs`: final
 `RustEmitter::datomic_library()` output cannot provide `Datomic` for
-`Box<Query>`. `tests/ethos_contract.rs` proves the authored Ethos map parses,
-the complete grammar round-trips at `Text<Query>`, and wrong shapes are
-refused.
+`Box<Query>`. `tests/ethos_contract.rs` is the exact map-to-hand-D3 structural
+witness: it asserts every authored Query variant, payload field, `Box<Query>`
+application, and Datomic method before proving the complete grammar
+round-trips at `Text<Query>` and wrong shapes are refused. Byte regeneration
+is inapplicable because that emitted recursive Rust cannot compile against the
+pinned Datomic contract.
