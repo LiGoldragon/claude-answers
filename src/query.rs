@@ -2,29 +2,11 @@
 
 use std::path::PathBuf;
 
-use datomic::{Actualizable, Corporal, Datom, Datomic, Potential};
+use datomic::{Actualizable, Datom, Potential};
 
 use crate::error::Result;
 use crate::generated::{Answer, Query, QueryGrep};
 use crate::transcript::{ProjectDirectory, Transcript};
-
-// ---------------------------------------------------------------------------
-// Box<Query> — datomic provides no blanket Datomic for Box<T>. The orphan
-// rule allows this because Box is #[fundamental] and Query is local.
-// ---------------------------------------------------------------------------
-
-impl Corporal<Datom> for Box<Query> {
-    type Fault = datomic::Fault;
-    fn incorporate(datom: Datom) -> std::result::Result<Self, datomic::Fault> {
-        Query::incorporate(datom).map(Box::new)
-    }
-}
-
-impl Datomic for Box<Query> {
-    fn datomize(&self) -> Datom {
-        (**self).datomize()
-    }
-}
 
 /// Actualize one inline datom text value as a query.
 pub fn parse(argument: &str) -> Result<Query> {

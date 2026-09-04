@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "claude-answers"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "datomic",
  "ethos-zero",
@@ -16,16 +16,16 @@ dependencies = [
 
 [[package]]
 name = "datomic"
-version = "0.8.0"
-source = "git+https://github.com/LiGoldragon/datomic?rev=a27f9b8e7789#a27f9b8e778935f1fb2ec0011620cf44a96ea81b"
+version = "0.9.0"
+source = "git+https://github.com/LiGoldragon/datomic?rev=e4430bfe#e4430bfedb5c05134c1480b04e3890d3dad64c4b"
 dependencies = [
  "protos",
 ]
 
 [[package]]
 name = "ethos-zero"
-version = "1.1.0"
-source = "git+https://github.com/LiGoldragon/ethos-zero?rev=31c5984c7fda#31c5984c7fda5baeb65295bef6c33fe3429220e0"
+version = "1.2.0"
+source = "git+https://github.com/LiGoldragon/ethos-zero?rev=8bcb0b9402fb#8bcb0b9402fbfc378c41e32562662b65f753dde1"
 dependencies = [
  "datomic",
  "proc-macro2",

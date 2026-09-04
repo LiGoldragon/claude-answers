@@ -1,5 +1,7 @@
 #![allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct QueryGrep(pub Box<Query>, pub protos::Text);
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Query {
     Latest,
     All,
@@ -7,6 +9,7 @@ pub enum Query {
     File(protos::Text),
     Grep(QueryGrep),
 }
+datomic::impl_datomic_box!(Query);
 impl datomic::Corporal<datomic::Datom> for Query {
     type Fault = datomic::Fault;
     fn incorporate(concept: datomic::Datom) -> std::result::Result<Self, datomic::Fault> {
@@ -98,6 +101,7 @@ impl datomic::Datomic for QueryGrep {
         ])
     }
 }
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Answer(pub protos::Text, pub protos::Text, pub protos::Text);
 impl datomic::Corporal<datomic::Datom> for Answer {
     type Fault = datomic::Fault;
