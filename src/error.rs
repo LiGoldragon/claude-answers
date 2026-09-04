@@ -20,12 +20,12 @@ pub enum Error {
         directory: PathBuf,
     },
 
-    #[error("invalid Datomic argument: {0:?}")]
-    Argument(datomic::Fault),
+    #[error("{0:?}")]
+    Argument(datomic::Situated<datomic::Fault>),
 }
 
-impl From<datomic::Fault> for Error {
-    fn from(fault: datomic::Fault) -> Self {
+impl From<datomic::Situated<datomic::Fault>> for Error {
+    fn from(fault: datomic::Situated<datomic::Fault>) -> Self {
         Self::Argument(fault)
     }
 }

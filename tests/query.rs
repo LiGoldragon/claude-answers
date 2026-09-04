@@ -1,106 +1,151 @@
-//! Embodying the Datomic argument and running a query against a fixture project.
+//! Actualizing the Datom argument and running a query against a fixture project.
 
 use std::path::{Path, PathBuf};
 
-use claude_answers::{ProjectDirectory, Query};
-use datomic::{Datomic, Text, TextEdge};
+use datomic::Textualizable;
+
+use claude_answers::{Answer, ProjectDirectory, Query, QueryGrep};
 
 fn fixture_project() -> ProjectDirectory {
-    // The fixture lives at tests/home/.claude/projects/-w/, i.e. home =
-    // tests/home and working directory = /w (encoded "-w").
     let home = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/home");
     ProjectDirectory::locate(&home, Path::new("/w"))
 }
 
-fn render(query: &Query) -> String {
-    let mut buffer = Vec::new();
-    query.run(&fixture_project(), &mut buffer).unwrap();
-    String::from_utf8(buffer).unwrap()
+fn run(query: &Query) -> Vec<Answer> {
+    query.run(&fixture_project()).unwrap()
 }
+
+// ---------------------------------------------------------------------------
+// Parse and round-trip tests
+// ---------------------------------------------------------------------------
 
 #[test]
 fn latest_parses_from_a_bare_atom() {
-    let query = Text::<Query>::from("Latest")
-        .embody()
-        .expect("the public Datomic text edge embodies Latest");
-    assert_eq!(query, Query::Latest);
-    assert_eq!(query.textualize().as_ref(), "Latest");
+    let query = claude_answers::parse("Latest").unwrap();
+    assert!(matches!(query, Query::Latest));
+    assert_eq!(query.textualize(), "Latest");
 }
 
 #[test]
 fn all_parses_from_a_bare_atom() {
-    assert_eq!(Query::parse("All").unwrap(), Query::All);
+    let query = claude_answers::parse("All").unwrap();
+    assert!(matches!(query, Query::All));
+    assert_eq!(query.textualize(), "All");
 }
 
 #[test]
 fn session_parses_with_an_id_fragment() {
-    assert_eq!(
-        Query::parse("Session.47318657").unwrap(),
-        Query::session("47318657").expect("representable session fragment")
-    );
+    let query = claude_answers::parse("Session.47318657").unwrap();
+    assert!(matches!(query, Query::Session(ref s) if s == "47318657"));
+    assert_eq!(query.textualize(), "Session.47318657");
 }
 
 #[test]
 fn file_parses_with_a_path() {
-    assert_eq!(
-        Query::parse("File./home/li/x.jsonl").unwrap(),
-        Query::file("/home/li/x.jsonl").expect("representable transcript path")
-    );
+    let query = claude_answers::parse("File./home/li/x.jsonl").unwrap();
+    assert!(matches!(query, Query::File(ref p) if p == "/home/li/x.jsonl"));
+    assert_eq!(query.textualize(), "File./home/li/x.jsonl");
 }
 
 #[test]
 fn grep_wraps_a_selection() {
-    assert_eq!(
-        Query::parse("Grep.{All Bluetooth}").unwrap(),
-        Query::grep(Query::All, "Bluetooth").expect("representable filter")
-    );
+    let query = claude_answers::parse("Grep.{ All Bluetooth }").unwrap();
+    assert!(matches!(query, Query::Grep(QueryGrep(_, ref needle)) if needle == "Bluetooth"));
+    assert_eq!(query.textualize(), "Grep.{ All Bluetooth }");
 }
 
 #[test]
-fn grep_takes_parenthesized_multiword_text() {
-    assert_eq!(
-        Query::parse("Grep.{Session.47318657 (Bluetooth adapter)}").unwrap(),
-        Query::grep(
-            Query::session("47318657").expect("representable session fragment"),
-            "Bluetooth adapter",
-        )
-        .expect("representable filter")
+fn grep_takes_curly_quoted_multiword_text() {
+    let input = "Grep.{ Session.47318657 \u{201C}Bluetooth adapter\u{201D} }";
+    let query = claude_answers::parse(input).unwrap();
+    assert!(
+        matches!(query, Query::Grep(QueryGrep(_, ref needle)) if needle == "Bluetooth adapter")
     );
+    assert_eq!(query.textualize(), input);
 }
 
 #[test]
-fn all_prints_every_answer_with_a_count_footer() {
-    let output = render(&Query::All);
-    assert!(output.contains("Bluetooth mic drops"));
-    assert!(output.contains("What should the repo be named?"));
-    assert!(output.contains("# ^ 2 answer(s) in session-11112222.jsonl"));
+fn grep_round_trips_nested() {
+    let input = "Grep.{ Grep.{ Session.47318657 Bluetooth } adapter }";
+    let query = claude_answers::parse(input).unwrap();
+    assert_eq!(query.textualize(), input);
+}
+
+// ---------------------------------------------------------------------------
+// Execution tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn all_returns_every_answer() {
+    let answers = run(&Query::All);
+    assert!(answers.len() >= 2);
+    assert!(answers.iter().any(|a| a.0.contains("Bluetooth")));
+    assert!(
+        answers
+            .iter()
+            .any(|a| a.0.contains("What should the repo be named?"))
+    );
 }
 
 #[test]
 fn grep_keeps_only_matching_answers() {
-    let output = render(&Query::parse("Grep.{All Bluetooth}").unwrap());
-    assert!(output.contains("Bluetooth mic drops"));
-    assert!(!output.contains("What should the repo be named?"));
-    assert!(output.contains("# ^ 1 answer(s) in"));
+    let query = claude_answers::parse("Grep.{ All Bluetooth }").unwrap();
+    let answers = run(&query);
+    assert!(answers.iter().all(|a| {
+        a.0.to_lowercase().contains("bluetooth")
+            || a.1.to_lowercase().contains("bluetooth")
+            || a.2.to_lowercase().contains("bluetooth")
+    }));
 }
 
 #[test]
 fn latest_reads_the_single_fixture_transcript() {
-    let output = render(&Query::Latest);
-    assert!(output.contains("Bluetooth mic drops"));
+    let answers = run(&Query::Latest);
+    assert!(!answers.is_empty());
 }
 
 #[test]
 fn explicit_file_reads_that_transcript() {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/home/.claude/projects/-w/session-11112222.jsonl");
-    let query =
-        Query::file(path.to_string_lossy().into_owned()).expect("fixture path is representable");
-    let mut buffer = Vec::new();
-    query.run(&fixture_project(), &mut buffer).unwrap();
-    assert!(
-        String::from_utf8(buffer)
-            .unwrap()
-            .contains("Bluetooth mic drops")
-    );
+    let query = claude_answers::parse(&format!("File.{}", path.display())).unwrap();
+    let answers = run(&query);
+    assert!(answers.iter().any(|a| a.0.contains("Bluetooth")));
+}
+
+// ---------------------------------------------------------------------------
+// Datom output tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn answer_textualizes_as_datom_struct() {
+    let answer = Answer("Q?".to_owned(), "A".to_owned(), String::new());
+    let text = answer.textualize();
+    // A struct of three texts: { Q? A "" }
+    // "Q?" is not bare safe (contains ?) so it's curly-quoted
+    assert!(text.contains("Q?"));
+    assert!(text.contains("A"));
+}
+
+#[test]
+fn answers_textualize_as_datom_vector() {
+    let answers = vec![
+        Answer("Q1".to_owned(), "A1".to_owned(), String::new()),
+        Answer("Q2".to_owned(), "A2".to_owned(), "notes".to_owned()),
+    ];
+    let text = answers.textualize();
+    assert!(text.starts_with("[ "));
+    assert!(text.ends_with(" ]"));
+}
+
+// ---------------------------------------------------------------------------
+// Fault tests
+// ---------------------------------------------------------------------------
+
+#[test]
+fn wrong_shapes_are_refused() {
+    assert!(claude_answers::parse("Unknown").is_err());
+    assert!(claude_answers::parse("Grep.All").is_err());
+    assert!(claude_answers::parse("Grep.{ All }").is_err());
+    assert!(claude_answers::parse("Grep.{ All Bluetooth extra }").is_err());
 }

@@ -7,25 +7,55 @@
 //!   claude-answers File./path/to.jsonl       one explicit transcript file
 //!   claude-answers 'Grep.{All Bluetooth}'   filter answers by text
 //!
-//! The argument is one typed Datomic `Query`; with no argument the newest
-//! transcript is shown (as if `Latest` were given).
+//! The argument is one typed Datom `Query`; with no argument the newest
+//! transcript is shown (as if `Latest` were given). Output is canonical Datom:
+//! a vector of `{ question option notes }` answer structs. Faults print as
+//! canonical Datom on stderr.
 
-use std::io::Write;
+use std::process::ExitCode;
 
-use claude_answers::{ProjectDirectory, Query, Result};
+use datomic::{Datom, Datomic, Textualizable};
 
-fn main() -> Result<()> {
+use claude_answers::{Answer, ProjectDirectory, Query};
+
+fn main() -> ExitCode {
     let query = match std::env::args().nth(1) {
-        Some(argument) => Query::parse(&argument)?,
+        Some(argument) => match claude_answers::parse(&argument) {
+            Ok(query) => query,
+            Err(claude_answers::Error::Argument(situated)) => {
+                // Textualize the situated fault as canonical datom.
+                let datom = Datom::Struct(vec![
+                    Datomic::datomize(&situated.0),
+                    Datomic::datomize(&situated.1),
+                ]);
+                eprintln!("{}", datom.textualize());
+                return ExitCode::FAILURE;
+            }
+            Err(error) => {
+                eprintln!("{error}");
+                return ExitCode::FAILURE;
+            }
+        },
         None => Query::Latest,
     };
 
-    let project = ProjectDirectory::for_current_directory()?;
-    let stdout = std::io::stdout();
-    let mut writer = stdout.lock();
-    let written = query.run(&project, &mut writer)?;
-    if written == 0 {
-        writeln!(writer, "(no answers found)")?;
+    let project = match ProjectDirectory::for_current_directory() {
+        Ok(project) => project,
+        Err(error) => {
+            eprintln!("{error}");
+            return ExitCode::FAILURE;
+        }
+    };
+
+    match query.run(&project) {
+        Ok(answers) => {
+            let datom: Vec<Answer> = answers;
+            println!("{}", datom.textualize());
+            ExitCode::SUCCESS
+        }
+        Err(error) => {
+            eprintln!("{error}");
+            ExitCode::FAILURE
+        }
     }
-    Ok(())
 }

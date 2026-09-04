@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "claude-answers"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "datomic",
  "ethos-zero",
@@ -16,16 +16,16 @@ dependencies = [
 
 [[package]]
 name = "datomic"
-version = "0.7.1"
-source = "git+https://github.com/LiGoldragon/datomic?rev=b670c72d0c2cb94ad1e39b372271f6569d91e214#b670c72d0c2cb94ad1e39b372271f6569d91e214"
+version = "0.8.0"
+source = "git+https://github.com/LiGoldragon/datomic?rev=a27f9b8e7789#a27f9b8e778935f1fb2ec0011620cf44a96ea81b"
 dependencies = [
  "protos",
 ]
 
 [[package]]
 name = "ethos-zero"
-version = "0.7.1"
-source = "git+https://github.com/LiGoldragon/ethos-zero?rev=b922afba278d5e1430f0a52ce49898c3263e87bc#b922afba278d5e1430f0a52ce49898c3263e87bc"
+version = "1.1.0"
+source = "git+https://github.com/LiGoldragon/ethos-zero?rev=31c5984c7fda#31c5984c7fda5baeb65295bef6c33fe3429220e0"
 dependencies = [
  "datomic",
  "proc-macro2",
@@ -58,8 +58,8 @@ dependencies = [
 
 [[package]]
 name = "protos"
-version = "0.14.0"
-source = "git+https://github.com/LiGoldragon/protos?rev=bfde3b878dd3de2991d7f605b59f57a13ef8f20b#bfde3b878dd3de2991d7f605b59f57a13ef8f20b"
+version = "0.15.0"
+source = "git+https://github.com/LiGoldragon/protos?rev=56c683ec8d1e#56c683ec8d1ec8f8f80e9e12251fbfd08d27d728"
 
 [[package]]
 name = "quote"
