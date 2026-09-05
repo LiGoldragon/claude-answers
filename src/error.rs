@@ -21,11 +21,14 @@ pub enum Error {
     },
 
     #[error("{0:?}")]
-    Argument(datomic::Situated<datomic::Fault>),
+    Argument(datom_codec::Fault),
+
+    #[error("answer cannot be represented as Datom text: {0:?}")]
+    Text(#[from] protos::Refusal),
 }
 
-impl From<datomic::Situated<datomic::Fault>> for Error {
-    fn from(fault: datomic::Situated<datomic::Fault>) -> Self {
+impl From<datom_codec::Fault> for Error {
+    fn from(fault: datom_codec::Fault) -> Self {
         Self::Argument(fault)
     }
 }

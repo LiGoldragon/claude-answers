@@ -2,9 +2,14 @@
 
 use std::path::{Path, PathBuf};
 
-use datomic::Textualizable;
+use datom_codec::Textualizable;
+use protos::Text;
 
-use claude_answers::{Answer, ProjectDirectory, Query, QueryGrep};
+use claude_answers::{Answer, ProjectDirectory, Query};
+
+fn text(value: &str) -> Text {
+    value.try_into().expect("fixture text")
+}
 
 fn fixture_project() -> ProjectDirectory {
     let home = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/home");
@@ -36,21 +41,21 @@ fn all_parses_from_a_bare_atom() {
 #[test]
 fn session_parses_with_an_id_fragment() {
     let query = claude_answers::parse("Session.47318657").unwrap();
-    assert!(matches!(query, Query::Session(ref s) if s == "47318657"));
+    assert!(matches!(query, Query::Session(ref s) if s.as_ref() == "47318657"));
     assert_eq!(query.textualize(), "Session.47318657");
 }
 
 #[test]
 fn file_parses_with_a_path() {
     let query = claude_answers::parse("File./home/li/x.jsonl").unwrap();
-    assert!(matches!(query, Query::File(ref p) if p == "/home/li/x.jsonl"));
+    assert!(matches!(query, Query::File(ref p) if p.as_ref() == "/home/li/x.jsonl"));
     assert_eq!(query.textualize(), "File./home/li/x.jsonl");
 }
 
 #[test]
 fn grep_wraps_a_selection() {
     let query = claude_answers::parse("Grep.{ All Bluetooth }").unwrap();
-    assert!(matches!(query, Query::Grep(QueryGrep(_, ref needle)) if needle == "Bluetooth"));
+    assert!(matches!(query, Query::Grep(_, ref needle) if needle.as_ref() == "Bluetooth"));
     assert_eq!(query.textualize(), "Grep.{ All Bluetooth }");
 }
 
@@ -58,9 +63,7 @@ fn grep_wraps_a_selection() {
 fn grep_takes_curly_quoted_multiword_text() {
     let input = "Grep.{ Session.47318657 \u{201C}Bluetooth adapter\u{201D} }";
     let query = claude_answers::parse(input).unwrap();
-    assert!(
-        matches!(query, Query::Grep(QueryGrep(_, ref needle)) if needle == "Bluetooth adapter")
-    );
+    assert!(matches!(query, Query::Grep(_, ref needle) if needle.as_ref() == "Bluetooth adapter"));
     assert_eq!(query.textualize(), input);
 }
 
@@ -119,7 +122,7 @@ fn explicit_file_reads_that_transcript() {
 
 #[test]
 fn answer_textualizes_as_datom_struct() {
-    let answer = Answer("Q?".to_owned(), "A".to_owned(), String::new());
+    let answer = Answer(text("Q?"), text("A"), text(""));
     let text = answer.textualize();
     // A struct of three texts: { Q? A "" }
     // "Q?" is not bare safe (contains ?) so it's curly-quoted
@@ -130,8 +133,8 @@ fn answer_textualizes_as_datom_struct() {
 #[test]
 fn answers_textualize_as_datom_vector() {
     let answers = vec![
-        Answer("Q1".to_owned(), "A1".to_owned(), String::new()),
-        Answer("Q2".to_owned(), "A2".to_owned(), "notes".to_owned()),
+        Answer(text("Q1"), text("A1"), text("")),
+        Answer(text("Q2"), text("A2"), text("notes")),
     ];
     let text = answers.textualize();
     assert!(text.starts_with("[ "));

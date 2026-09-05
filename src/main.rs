@@ -14,7 +14,7 @@
 
 use std::process::ExitCode;
 
-use datomic::{Datom, Datomic, Textualizable};
+use datom_codec::Textualizable;
 
 use claude_answers::{Answer, ProjectDirectory, Query};
 
@@ -22,13 +22,8 @@ fn main() -> ExitCode {
     let query = match std::env::args().nth(1) {
         Some(argument) => match claude_answers::parse(&argument) {
             Ok(query) => query,
-            Err(claude_answers::Error::Argument(situated)) => {
-                // Textualize the situated fault as canonical datom.
-                let datom = Datom::Struct(vec![
-                    Datomic::datomize(&situated.0),
-                    Datomic::datomize(&situated.1),
-                ]);
-                eprintln!("{}", datom.textualize());
+            Err(claude_answers::Error::Argument(fault)) => {
+                eprintln!("{}", fault.textualize());
                 return ExitCode::FAILURE;
             }
             Err(error) => {

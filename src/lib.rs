@@ -15,6 +15,6 @@ pub mod query;
 pub mod transcript;
 
 pub use error::{Error, Result};
-pub use generated::{Answer, Query, QueryGrep};
+pub use generated::{Answer, Query};
 pub use query::parse;
 pub use transcript::{ProjectDirectory, Transcript};

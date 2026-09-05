@@ -16,14 +16,14 @@ name = "claude-answers"
 path = "src/main.rs"
 
 [dependencies]
-datomic = { git = "https://github.com/LiGoldragon/datomic", rev = "4712361c0194" }
-protos = { git = "https://github.com/LiGoldragon/protos", rev = "48061367872b" }
+datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "41a3c073d5c5cdcb3ebb1a5c842e8c068145fdb2" }
+protos = { git = "https://github.com/LiGoldragon/protos", rev = "2d999f173334" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 
 [dev-dependencies]
-ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "0f198968d208" }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "341c5c57e45d98ee7d8a88d9b5746d3f50b16683" }
 
 [lints.rust]
 unsafe_code = "forbid"

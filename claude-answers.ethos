@@ -1,6 +1,5 @@
-Library.{0 5 0}
-[]
+Types
+[ protos:[ Text ] ]
 [ Query.[ Latest All Session.Text File.Text Grep.{ Query Text } ]
   Answer.{ Text Text Text } ]
-[]
 []

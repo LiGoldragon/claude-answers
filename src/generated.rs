@@ -1,143 +1,123 @@
 #![allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct QueryGrep(pub Box<Query>, pub protos::Text);
-#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Query {
     Latest,
     All,
     Session(protos::Text),
     File(protos::Text),
-    Grep(QueryGrep),
+    Grep(std::boxed::Box<Query>, protos::Text),
 }
-datomic::impl_datomic_box!(Query);
-impl datomic::Corporal<datomic::Datom> for Query {
-    type Fault = datomic::Fault;
-    fn incorporate(concept: datomic::Datom) -> std::result::Result<Self, datomic::Fault> {
-        match concept {
-            datomic::Datom::Bare(s) if s == stringify!(Latest) => Ok(Self::Latest),
-            datomic::Datom::Bare(s) if s == stringify!(All) => Ok(Self::All),
-            datomic::Datom::Variant(head, protos::Separator::Period, Some(body))
-                if head == stringify!(Session) =>
-            {
-                Ok(Self::Session(<protos::Text as datomic::Corporal<
-                    datomic::Datom,
-                >>::incorporate(*body)?))
+impl datom_codec::Datomic for Query {
+    fn incorporate(site: datom_codec::Site<'_>) -> std::result::Result<Self, datom_codec::Fault> {
+        let v = datom_codec::Sited::variant(site)?;
+        match v.name {
+            "Latest" => {
+                datom_codec::Headed::nothing(v)?;
+                std::result::Result::Ok(Self::Latest)
             }
-            datomic::Datom::Variant(head, protos::Separator::Period, Some(body))
-                if head == stringify!(File) =>
-            {
-                Ok(Self::File(<protos::Text as datomic::Corporal<
-                    datomic::Datom,
-                >>::incorporate(*body)?))
+            "All" => {
+                datom_codec::Headed::nothing(v)?;
+                std::result::Result::Ok(Self::All)
             }
-            datomic::Datom::Variant(head, protos::Separator::Period, Some(body))
-                if head == stringify!(Grep) =>
-            {
-                Ok(Self::Grep(<QueryGrep as datomic::Corporal<
-                    datomic::Datom,
-                >>::incorporate(*body)?))
+            "Session" => std::result::Result::Ok(Self::Session(datom_codec::Carrying::body(v)?)),
+            "File" => std::result::Result::Ok(Self::File(datom_codec::Carrying::body(v)?)),
+            "Grep" => {
+                let mut p = datom_codec::Headed::positions(v, 2)?;
+                let p0: std::boxed::Box<Query> = datom_codec::Positional::position(&mut p)?;
+                let p1: protos::Text = datom_codec::Positional::position(&mut p)?;
+                std::result::Result::Ok(Self::Grep(p0, p1))
             }
-            other => Err(datomic::Fault::Corporal(
-                vec![],
-                datomic::Problem::Shape(datomic::Expected::Variant, other),
+            _ => std::result::Result::Err(datom_codec::Headed::reject(
+                &v,
+                datom_codec::Problem::UnknownVariant(
+                    protos::Word::try_from(v.name).expect("variant name"),
+                ),
             )),
         }
     }
 }
-impl datomic::Datomic for Query {
-    fn datomize(&self) -> datomic::Datom {
-        match self {
-            Self::Latest => datomic::Datom::Bare(stringify!(Latest).to_owned()),
-            Self::All => datomic::Datom::Bare(stringify!(All).to_owned()),
-            Self::Session(value) => datomic::Datom::Variant(
-                stringify!(Session).to_owned(),
-                protos::Separator::Period,
-                Some(Box::new(datomic::Datomic::datomize(value))),
-            ),
-            Self::File(value) => datomic::Datom::Variant(
-                stringify!(File).to_owned(),
-                protos::Separator::Period,
-                Some(Box::new(datomic::Datomic::datomize(value))),
-            ),
-            Self::Grep(value) => datomic::Datom::Variant(
-                stringify!(Grep).to_owned(),
-                protos::Separator::Period,
-                Some(Box::new(datomic::Datomic::datomize(value))),
-            ),
-        }
-    }
-}
-impl datomic::Corporal<datomic::Datom> for QueryGrep {
-    type Fault = datomic::Fault;
-    fn incorporate(concept: datomic::Datom) -> std::result::Result<Self, datomic::Fault> {
-        match concept {
-            datomic::Datom::Struct(fields) if fields.len() == 2usize => {
-                let mut iter = fields.into_iter();
-                Ok(Self(
-                    <Box<Query> as datomic::Corporal<datomic::Datom>>::incorporate(
-                        iter.next().unwrap(),
-                    )?,
-                    <protos::Text as datomic::Corporal<datomic::Datom>>::incorporate(
-                        iter.next().unwrap(),
-                    )?,
-                ))
-            }
-            datomic::Datom::Struct(fields) => Err(datomic::Fault::Corporal(
-                vec![],
-                datomic::Problem::Arity(2i64, fields.len() as i64),
-            )),
-            other => Err(datomic::Fault::Corporal(
-                vec![],
-                datomic::Problem::Shape(datomic::Expected::Struct, other),
-            )),
-        }
-    }
-}
-impl datomic::Datomic for QueryGrep {
-    fn datomize(&self) -> datomic::Datom {
-        datomic::Datom::Struct(vec![
-            datomic::Datomic::datomize(&self.0),
-            datomic::Datomic::datomize(&self.1),
-        ])
+impl protos::Conceivable<datom_codec::Datom> for Query {
+    type Fault = std::convert::Infallible;
+    fn conceive(&self) -> std::result::Result<protos::Situated<datom_codec::Datom>, Self::Fault> {
+        std::result::Result::Ok(protos::Situated(
+            protos::Situation {
+                extent: protos::Extent(0, 0),
+                children: vec![],
+            },
+            match self {
+                Self::Latest => datom_codec::Datom::Word(
+                    datom_codec::DatomWord::try_from(
+                        protos::Word::try_from("Latest").expect("static variant"),
+                    )
+                    .expect("stable variant"),
+                ),
+                Self::All => datom_codec::Datom::Word(
+                    datom_codec::DatomWord::try_from(
+                        protos::Word::try_from("All").expect("static variant"),
+                    )
+                    .expect("stable variant"),
+                ),
+                Self::Session(p0) => datom_codec::Datom::Variant(
+                    protos::Symbol::try_from("Session").expect("static variant"),
+                    std::boxed::Box::new(
+                        protos::Conceivable::conceive(p0)
+                            .expect("infallible datom ascent")
+                            .1,
+                    ),
+                ),
+                Self::File(p0) => datom_codec::Datom::Variant(
+                    protos::Symbol::try_from("File").expect("static variant"),
+                    std::boxed::Box::new(
+                        protos::Conceivable::conceive(p0)
+                            .expect("infallible datom ascent")
+                            .1,
+                    ),
+                ),
+                Self::Grep(p0, p1) => datom_codec::Datom::Variant(
+                    protos::Symbol::try_from("Grep").expect("static variant"),
+                    std::boxed::Box::new(datom_codec::Datom::Struct(vec![
+                        protos::Conceivable::conceive(p0)
+                            .expect("infallible datom ascent")
+                            .1,
+                        protos::Conceivable::conceive(p1)
+                            .expect("infallible datom ascent")
+                            .1,
+                    ])),
+                ),
+            },
+        ))
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Answer(pub protos::Text, pub protos::Text, pub protos::Text);
-impl datomic::Corporal<datomic::Datom> for Answer {
-    type Fault = datomic::Fault;
-    fn incorporate(concept: datomic::Datom) -> std::result::Result<Self, datomic::Fault> {
-        match concept {
-            datomic::Datom::Struct(fields) if fields.len() == 3usize => {
-                let mut iter = fields.into_iter();
-                Ok(Self(
-                    <protos::Text as datomic::Corporal<datomic::Datom>>::incorporate(
-                        iter.next().unwrap(),
-                    )?,
-                    <protos::Text as datomic::Corporal<datomic::Datom>>::incorporate(
-                        iter.next().unwrap(),
-                    )?,
-                    <protos::Text as datomic::Corporal<datomic::Datom>>::incorporate(
-                        iter.next().unwrap(),
-                    )?,
-                ))
-            }
-            datomic::Datom::Struct(fields) => Err(datomic::Fault::Corporal(
-                vec![],
-                datomic::Problem::Arity(3i64, fields.len() as i64),
-            )),
-            other => Err(datomic::Fault::Corporal(
-                vec![],
-                datomic::Problem::Shape(datomic::Expected::Struct, other),
-            )),
-        }
+impl datom_codec::Datomic for Answer {
+    fn incorporate(site: datom_codec::Site<'_>) -> std::result::Result<Self, datom_codec::Fault> {
+        let mut p = datom_codec::Sited::positions(site, 3)?;
+        let p0: protos::Text = datom_codec::Positional::position(&mut p)?;
+        let p1: protos::Text = datom_codec::Positional::position(&mut p)?;
+        let p2: protos::Text = datom_codec::Positional::position(&mut p)?;
+        std::result::Result::Ok(Self(p0, p1, p2))
     }
 }
-impl datomic::Datomic for Answer {
-    fn datomize(&self) -> datomic::Datom {
-        datomic::Datom::Struct(vec![
-            datomic::Datomic::datomize(&self.0),
-            datomic::Datomic::datomize(&self.1),
-            datomic::Datomic::datomize(&self.2),
-        ])
+impl protos::Conceivable<datom_codec::Datom> for Answer {
+    type Fault = std::convert::Infallible;
+    fn conceive(&self) -> std::result::Result<protos::Situated<datom_codec::Datom>, Self::Fault> {
+        std::result::Result::Ok(protos::Situated(
+            protos::Situation {
+                extent: protos::Extent(0, 0),
+                children: vec![],
+            },
+            datom_codec::Datom::Struct(vec![
+                protos::Conceivable::conceive(&self.0)
+                    .expect("infallible datom ascent")
+                    .1,
+                protos::Conceivable::conceive(&self.1)
+                    .expect("infallible datom ascent")
+                    .1,
+                protos::Conceivable::conceive(&self.2)
+                    .expect("infallible datom ascent")
+                    .1,
+            ]),
+        ))
     }
 }
