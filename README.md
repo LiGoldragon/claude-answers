@@ -17,14 +17,14 @@ The single argument is one typed Datom query:
 claude-answers                          # newest transcript in this project
 claude-answers All                      # every transcript in this project
 claude-answers Session.47318657         # transcripts whose name holds the id
-claude-answers File./path/to.jsonl      # one explicit transcript file
+claude-answers 'File.«/path/to.jsonl»'  # one explicit transcript file
 claude-answers 'Grep.{ All Bluetooth }' # any selection, filtered by text
 ```
 
-Multi-word filter text is curly-quote delimited:
+Multi-word filter text is guillemet-delimited:
 
 ```
-claude-answers 'Grep.{ Session.47318657 “Bluetooth adapter” }'
+claude-answers 'Grep.{ Session.47318657 «Bluetooth adapter» }'
 ```
 
 With no argument it behaves as `Latest`. Filters are case-insensitive and
@@ -33,10 +33,10 @@ match the question, the chosen option, or the notes.
 ## Output
 
 The output is canonical Datom: a vector of `{ question option notes }` answer
-structs with spaced delimiters and curly-quoted strings:
+structs with spaced delimiters and guillemet-delimited strings:
 
 ```
-[ { "What should the repo be named?" claude-answers "" } { "Bluetooth mic drops during active recording. What should happen?" "(notes only)" "active recording journal\ncaptured chunk immediately" } ]
+[ { «What should the repo be named?» claude-answers «» } { «Bluetooth mic drops during active recording. What should happen?» «(notes only)» «active recording journal\ncaptured chunk immediately» } ]
 ```
 
 Faults print as canonical Datom on stderr. An empty result is `[]`.

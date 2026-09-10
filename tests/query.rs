@@ -2,13 +2,13 @@
 
 use std::path::{Path, PathBuf};
 
-use datom_codec::Textualizable;
-use protos::Text;
+use datom_codec::{Datom, Datomizable};
+use protos::{Protosizable, Textualizable};
 
 use claude_answers::{Answer, ProjectDirectory, Query};
 
-fn text(value: &str) -> Text {
-    value.try_into().expect("fixture text")
+fn datom_text<T: Datomizable<Output = Datom>>(value: &T) -> String {
+    value.datomize(vec![]).protosize().textualize()
 }
 
 fn fixture_project() -> ProjectDirectory {
@@ -28,50 +28,50 @@ fn run(query: &Query) -> Vec<Answer> {
 fn latest_parses_from_a_bare_atom() {
     let query = claude_answers::parse("Latest").unwrap();
     assert!(matches!(query, Query::Latest));
-    assert_eq!(query.textualize(), "Latest");
+    assert_eq!(datom_text(&query), "Latest");
 }
 
 #[test]
 fn all_parses_from_a_bare_atom() {
     let query = claude_answers::parse("All").unwrap();
     assert!(matches!(query, Query::All));
-    assert_eq!(query.textualize(), "All");
+    assert_eq!(datom_text(&query), "All");
 }
 
 #[test]
 fn session_parses_with_an_id_fragment() {
     let query = claude_answers::parse("Session.47318657").unwrap();
-    assert!(matches!(query, Query::Session(ref s) if s.as_ref() == "47318657"));
-    assert_eq!(query.textualize(), "Session.47318657");
+    assert!(matches!(query, Query::Session(ref s) if s.as_str() == "47318657"));
+    assert_eq!(datom_text(&query), "Session.47318657");
 }
 
 #[test]
 fn file_parses_with_a_path() {
-    let query = claude_answers::parse("File./home/li/x.jsonl").unwrap();
-    assert!(matches!(query, Query::File(ref p) if p.as_ref() == "/home/li/x.jsonl"));
-    assert_eq!(query.textualize(), "File./home/li/x.jsonl");
+    let query = claude_answers::parse("File.«/home/li/x.jsonl»").unwrap();
+    assert!(matches!(query, Query::File(ref p) if p.as_str() == "/home/li/x.jsonl"));
+    assert_eq!(datom_text(&query), "File.«/home/li/x.jsonl»");
 }
 
 #[test]
 fn grep_wraps_a_selection() {
     let query = claude_answers::parse("Grep.{ All Bluetooth }").unwrap();
-    assert!(matches!(query, Query::Grep(_, ref needle) if needle.as_ref() == "Bluetooth"));
-    assert_eq!(query.textualize(), "Grep.{ All Bluetooth }");
+    assert!(matches!(query, Query::Grep(ref data) if data.string == "Bluetooth"));
+    assert_eq!(datom_text(&query), "Grep.{ All Bluetooth }");
 }
 
 #[test]
-fn grep_takes_curly_quoted_multiword_text() {
-    let input = "Grep.{ Session.47318657 \u{201C}Bluetooth adapter\u{201D} }";
+fn grep_takes_guillemet_delimited_multiword_text() {
+    let input = "Grep.{ Session.47318657 «Bluetooth adapter» }";
     let query = claude_answers::parse(input).unwrap();
-    assert!(matches!(query, Query::Grep(_, ref needle) if needle.as_ref() == "Bluetooth adapter"));
-    assert_eq!(query.textualize(), input);
+    assert!(matches!(query, Query::Grep(ref data) if data.string == "Bluetooth adapter"));
+    assert_eq!(datom_text(&query), input);
 }
 
 #[test]
 fn grep_round_trips_nested() {
     let input = "Grep.{ Grep.{ Session.47318657 Bluetooth } adapter }";
     let query = claude_answers::parse(input).unwrap();
-    assert_eq!(query.textualize(), input);
+    assert_eq!(datom_text(&query), input);
 }
 
 // ---------------------------------------------------------------------------
@@ -82,22 +82,26 @@ fn grep_round_trips_nested() {
 fn all_returns_every_answer() {
     let answers = run(&Query::All);
     assert!(answers.len() >= 2);
-    assert!(answers.iter().any(|a| a.0.contains("Bluetooth")));
     assert!(
         answers
             .iter()
-            .any(|a| a.0.contains("What should the repo be named?"))
+            .any(|answer| answer.first_string.contains("Bluetooth"))
     );
+    assert!(answers.iter().any(|answer| {
+        answer
+            .first_string
+            .contains("What should the repo be named?")
+    }));
 }
 
 #[test]
 fn grep_keeps_only_matching_answers() {
     let query = claude_answers::parse("Grep.{ All Bluetooth }").unwrap();
     let answers = run(&query);
-    assert!(answers.iter().all(|a| {
-        a.0.to_lowercase().contains("bluetooth")
-            || a.1.to_lowercase().contains("bluetooth")
-            || a.2.to_lowercase().contains("bluetooth")
+    assert!(answers.iter().all(|answer| {
+        answer.first_string.to_lowercase().contains("bluetooth")
+            || answer.second_string.to_lowercase().contains("bluetooth")
+            || answer.third_string.to_lowercase().contains("bluetooth")
     }));
 }
 
@@ -111,9 +115,13 @@ fn latest_reads_the_single_fixture_transcript() {
 fn explicit_file_reads_that_transcript() {
     let path: PathBuf = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/home/.claude/projects/-w/session-11112222.jsonl");
-    let query = claude_answers::parse(&format!("File.{}", path.display())).unwrap();
+    let query = claude_answers::parse(&format!("File.«{}»", path.display())).unwrap();
     let answers = run(&query);
-    assert!(answers.iter().any(|a| a.0.contains("Bluetooth")));
+    assert!(
+        answers
+            .iter()
+            .any(|answer| answer.first_string.contains("Bluetooth"))
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -122,10 +130,14 @@ fn explicit_file_reads_that_transcript() {
 
 #[test]
 fn answer_textualizes_as_datom_struct() {
-    let answer = Answer(text("Q?"), text("A"), text(""));
-    let text = answer.textualize();
+    let answer = Answer {
+        first_string: "Q?".to_owned(),
+        second_string: "A".to_owned(),
+        third_string: String::new(),
+    };
+    let text = datom_text(&answer);
     // A struct of three texts: { Q? A "" }
-    // "Q?" is not bare safe (contains ?) so it's curly-quoted
+    // "Q?" is not bare safe (contains ?) so it is guillemet-delimited.
     assert!(text.contains("Q?"));
     assert!(text.contains("A"));
 }
@@ -133,10 +145,18 @@ fn answer_textualizes_as_datom_struct() {
 #[test]
 fn answers_textualize_as_datom_vector() {
     let answers = vec![
-        Answer(text("Q1"), text("A1"), text("")),
-        Answer(text("Q2"), text("A2"), text("notes")),
+        Answer {
+            first_string: "Q1".to_owned(),
+            second_string: "A1".to_owned(),
+            third_string: String::new(),
+        },
+        Answer {
+            first_string: "Q2".to_owned(),
+            second_string: "A2".to_owned(),
+            third_string: "notes".to_owned(),
+        },
     ];
-    let text = answers.textualize();
+    let text = datom_text(&answers);
     assert!(text.starts_with("[ "));
     assert!(text.ends_with(" ]"));
 }

@@ -1,5 +1,18 @@
 # Upgrades
 
+## 0.6.0 — final Datom conversion chain
+
+Version 0.6.0 moves the CLI to Protos 0.29.0, Datom 0.25.4, and Ethos Zero
+6.1.2. `Query` and `Answer` are freshly generated from the authored Library
+and bear `Datomizable` and `Compositional`. Input actualizes through
+`Potential<Query>` with explicit reader, composition, and depth budgets.
+Output and faults follow Datom -> Protos -> canonical text.
+
+The final String syntax uses guillemets. Paths and other values containing
+Datom punctuation must be delimited, for example `File.«/path/to.jsonl»` and
+`Grep.{ All «two words» }`. The old dotted bare-path and curly-quote spellings
+are removed rather than accepted through a compatibility parser.
+
 ## 0.4.0 — ProtoformStack train
 
 Version 0.4.0 is a breaking data-boundary release porting claude-answers to

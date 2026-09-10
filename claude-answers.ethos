@@ -1,5 +1,6 @@
-Types
-[ protos:[ Text ] ]
-[ Query.[ Latest All Session.Text File.Text Grep.{ Query Text } ]
-  Answer.{ Text Text Text } ]
+Library
+[]
+[ Query.[ Latest All Session.String File.String Grep.{ Query String } ]
+  Answer.{ String String String } ]
+[]
 []

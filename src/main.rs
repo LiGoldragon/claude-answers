@@ -4,8 +4,8 @@
 //!   claude-answers                          newest transcript in this project
 //!   claude-answers All                      every transcript in this project
 //!   claude-answers Session.47318657          transcripts matching an id fragment
-//!   claude-answers File./path/to.jsonl       one explicit transcript file
-//!   claude-answers 'Grep.{All Bluetooth}'   filter answers by text
+//!   claude-answers 'File.«/path/to.jsonl»'   one explicit transcript file
+//!   claude-answers 'Grep.{ All Bluetooth }' filter answers by text
 //!
 //! The argument is one typed Datom `Query`; with no argument the newest
 //! transcript is shown (as if `Latest` were given). Output is canonical Datom:
@@ -14,7 +14,8 @@
 
 use std::process::ExitCode;
 
-use datom_codec::Textualizable;
+use datom_codec::Datomizable;
+use protos::{Protosizable, Textualizable};
 
 use claude_answers::{Answer, ProjectDirectory, Query};
 
@@ -23,7 +24,7 @@ fn main() -> ExitCode {
         Some(argument) => match claude_answers::parse(&argument) {
             Ok(query) => query,
             Err(claude_answers::Error::Argument(fault)) => {
-                eprintln!("{}", fault.textualize());
+                eprintln!("{}", fault.datomize(vec![]).protosize().textualize());
                 return ExitCode::FAILURE;
             }
             Err(error) => {
@@ -45,7 +46,7 @@ fn main() -> ExitCode {
     match query.run(&project) {
         Ok(answers) => {
             let datom: Vec<Answer> = answers;
-            println!("{}", datom.textualize());
+            println!("{}", datom.datomize(vec![]).protosize().textualize());
             ExitCode::SUCCESS
         }
         Err(error) => {
