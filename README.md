@@ -17,7 +17,7 @@ The single argument is one typed Datom query:
 claude-answers                          # newest transcript in this project
 claude-answers All                      # every transcript in this project
 claude-answers Session.47318657         # transcripts whose name holds the id
-claude-answers 'File.«/path/to.jsonl»'  # one explicit transcript file
+claude-answers File./path/to.jsonl      # one explicit transcript file
 claude-answers 'Grep.{ All Bluetooth }' # any selection, filtered by text
 ```
 

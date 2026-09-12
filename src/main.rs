@@ -4,7 +4,7 @@
 //!   claude-answers                          newest transcript in this project
 //!   claude-answers All                      every transcript in this project
 //!   claude-answers Session.47318657          transcripts matching an id fragment
-//!   claude-answers 'File.«/path/to.jsonl»'   one explicit transcript file
+//!   claude-answers File./path/to.jsonl       one explicit transcript file
 //!   claude-answers 'Grep.{ All Bluetooth }' filter answers by text
 //!
 //! The argument is one typed Datom `Query`; with no argument the newest

@@ -1,5 +1,20 @@
 # Upgrades
 
+## 0.7.0 — tonight's substrate heads
+
+Version 0.7.0 moves the CLI to Protos 0.30.0, Datom-codec 0.26.1, and Ethos
+Zero 8.0.0. `src/generated.rs` is regenerated from `claude-answers.ethos`
+against the new ethos-zero output, which now also derives `Clone`, `Debug`,
+and `PartialEq` and marks the struct derives `#[rustfmt::skip]`.
+
+datom-codec 0.26 and protos 0.30.0 change canonical opaque-string
+round-tripping: a string with no space and no delimiter character, such as a
+plain filesystem path, now textualizes bare instead of guillemet-delimited.
+`File./home/li/x.jsonl` is canonical where `File.«/home/li/x.jsonl»` was
+before. Guillemets remain valid on input and are still required, as before,
+whenever the string itself contains a space or Datom punctuation. No
+compatibility path is kept for the old always-guillemeted form.
+
 ## 0.6.0 — final Datom conversion chain
 
 Version 0.6.0 moves the CLI to Protos 0.29.0, Datom 0.25.4, and Ethos Zero

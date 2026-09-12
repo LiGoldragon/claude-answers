@@ -45,7 +45,7 @@ Does not own:
 Latest                                      newest transcript in this project (default)
 All                                         every transcript in this project
 Session.47318657                            transcripts whose file name holds the id
-File.«/path/to.jsonl»                       one explicit transcript file
+File./path/to.jsonl                         one explicit transcript file
 Grep.{ All Bluetooth }                      any selection, filtered by text
 Grep.{ Session.47318657 «two words» }       guillemet-delimited multi-word text
 ```

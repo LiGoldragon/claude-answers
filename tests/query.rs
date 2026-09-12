@@ -47,9 +47,9 @@ fn session_parses_with_an_id_fragment() {
 
 #[test]
 fn file_parses_with_a_path() {
-    let query = claude_answers::parse("File.«/home/li/x.jsonl»").unwrap();
+    let query = claude_answers::parse("File./home/li/x.jsonl").unwrap();
     assert!(matches!(query, Query::File(ref p) if p.as_str() == "/home/li/x.jsonl"));
-    assert_eq!(datom_text(&query), "File.«/home/li/x.jsonl»");
+    assert_eq!(datom_text(&query), "File./home/li/x.jsonl");
 }
 
 #[test]
