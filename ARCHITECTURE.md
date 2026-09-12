@@ -80,5 +80,5 @@ tests/
 ## Status
 
 **M3.** Port to Protos 0.29.0, Datom 0.25.4, and Ethos Zero 6.1.2. The
-generated types bear `Datomizable` and `Compositional`; input actualizes from
+generated types bear `Datomizable` and `Composing`; input actualizes from
 `Potential`, and output follows the open Datom -> Protos -> text chain.

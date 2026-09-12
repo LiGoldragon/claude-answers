@@ -1,6 +1,6 @@
 [package]
 name         = "claude-answers"
-version      = "0.7.1"
+version      = "0.8.0"
 edition      = "2024"
 rust-version = "1.89"
 license      = "MIT OR Apache-2.0"
@@ -16,14 +16,14 @@ name = "claude-answers"
 path = "src/main.rs"
 
 [dependencies]
-datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "627db67f2655efd9f786864009955005fd8ab2ad" }
+datom-codec = { git = "https://github.com/LiGoldragon/datom-codec", rev = "6dccc76b75918a91d3370a9d4fe88aa7dd567876" }
 protos = { git = "https://github.com/LiGoldragon/protos", rev = "171b21f65337983ab624b7b906397a4f1f92c5a3" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 
 [dev-dependencies]
-ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "de3d9928b156f2e1a92d060b7817af201abfdbef" }
+ethos-zero = { git = "https://github.com/LiGoldragon/ethos-zero", rev = "b232d35e03011161fe7ec9129ad99a9914413348" }
 
 [lints.rust]
 unsafe_code = "forbid"

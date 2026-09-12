@@ -1,5 +1,19 @@
 # Upgrades
 
+## 0.8.0 — the arity-split substrate
+
+Version 0.8.0 moves the CLI to Protos 0.30.1 (unchanged), Datom-codec
+0.27.0, and Ethos Zero 9.0.0. Datom-codec 0.27.0 gives arity back to
+`Compositional` and names the kind a datom composes into `Composing`; the
+derive macro is renamed to match, so `datom_codec::Compositional` becomes
+`datom_codec::Composing` on every generated type. `src/generated.rs` is
+regenerated from `claude-answers.ethos` against the new ethos-zero output.
+`Query` and `Answer` are re-exported from the crate root, so this is a
+breaking change to the published Rust surface: any consumer bound on
+`datom_codec::Compositional` for these types must move to
+`datom_codec::Composing`. No compatibility path is kept for the old derive
+name.
+
 ## 0.7.1 — final producer heads
 
 Version 0.7.1 repins to the final producer heads: Protos 0.30.1, Datom-codec
