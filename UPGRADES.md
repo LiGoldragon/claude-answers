@@ -1,5 +1,12 @@
 # Upgrades
 
+## 0.7.1 — final producer heads
+
+Version 0.7.1 repins to the final producer heads: Protos 0.30.1, Datom-codec
+0.26.3, and Ethos Zero 8.0.1 (dev-dependency only). `src/generated.rs` is
+verified byte-identical to its prior committed content when regenerated
+against the new ethos-zero output; no source changes were required.
+
 ## 0.7.0 — tonight's substrate heads
 
 Version 0.7.0 moves the CLI to Protos 0.30.0, Datom-codec 0.26.1, and Ethos
