@@ -2,13 +2,13 @@
 
 use std::path::{Path, PathBuf};
 
-use datom_codec::{Datom, Datomizable};
-use protos::{Protosizable, Textualizable};
+use datom_codec::Datomizable;
+use protos::{Compactable, Protosizable};
 
 use claude_answers::{Answer, ProjectDirectory, Query};
 
-fn datom_text<T: Datomizable<Output = Datom>>(value: &T) -> String {
-    value.datomize(vec![]).protosize().textualize()
+fn datom_text<T: Datomizable>(value: &T) -> String {
+    value.datomize(vec![]).protosize().compact()
 }
 
 fn fixture_project() -> ProjectDirectory {
@@ -171,4 +171,15 @@ fn wrong_shapes_are_refused() {
     assert!(claude_answers::parse("Grep.All").is_err());
     assert!(claude_answers::parse("Grep.{ All }").is_err());
     assert!(claude_answers::parse("Grep.{ All Bluetooth extra }").is_err());
+}
+
+#[test]
+fn query_archives_with_rkyv_and_reads_back_equal() {
+    let query = Query::Grep(claude_answers::generated::Grep_Data {
+        query: Box::new(Query::Session("47318657".to_string())),
+        string: "two words".to_string(),
+    });
+    let bytes = rkyv::to_bytes::<rkyv::rancor::Error>(&query).expect("archive");
+    let read = rkyv::from_bytes::<Query, rkyv::rancor::Error>(&bytes).expect("read back");
+    assert_eq!(read, query);
 }

@@ -1,5 +1,24 @@
 # Upgrades
 
+## 0.9.0 — rkyv-archived generated types
+
+Version 0.9.0 repins to Ethos Zero 16.0.0, Protos 0.32.2 and Datom-codec
+0.32.2. `Query`, `Grep_Data` and `Answer` now also derive rkyv `Archive`,
+`Serialize` and `Deserialize`, `Eq` and `Hash`; their `Datomizable` and
+`Composing` derives sit behind a `datom` feature. The crate depends on rkyv
+0.8 and declares `datom` as a default feature, because the CLI and the
+argument parser always textualize Datom; building with
+`--no-default-features` is not a supported shape. `src/generated.rs` is
+regenerated from `claude-answers.ethos`.
+
+Protos 0.32 prints the vertical canonical form from `textualize`. The CLI
+replies (answers on stdout, faults on stderr) use `Compactable::compact`, so
+their one-line text is unchanged. A consumer that called `textualize` on these
+types now gets the vertical print and calls `compact` where it needs one line.
+
+To deploy: repin claude-answers 0.9.0 in the consumer and rebuild; no data
+migration.
+
 ## 0.8.0 — the arity-split substrate
 
 Version 0.8.0 moves the CLI to Protos 0.30.1 (unchanged), Datom-codec

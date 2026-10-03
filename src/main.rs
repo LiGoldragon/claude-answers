@@ -15,7 +15,7 @@
 use std::process::ExitCode;
 
 use datom_codec::Datomizable;
-use protos::{Protosizable, Textualizable};
+use protos::{Compactable, Protosizable};
 
 use claude_answers::{Answer, ProjectDirectory, Query};
 
@@ -24,7 +24,7 @@ fn main() -> ExitCode {
         Some(argument) => match claude_answers::parse(&argument) {
             Ok(query) => query,
             Err(claude_answers::Error::Argument(fault)) => {
-                eprintln!("{}", fault.datomize(vec![]).protosize().textualize());
+                eprintln!("{}", fault.datomize(vec![]).protosize().compact());
                 return ExitCode::FAILURE;
             }
             Err(error) => {
@@ -46,7 +46,7 @@ fn main() -> ExitCode {
     match query.run(&project) {
         Ok(answers) => {
             let datom: Vec<Answer> = answers;
-            println!("{}", datom.datomize(vec![]).protosize().textualize());
+            println!("{}", datom.datomize(vec![]).protosize().compact());
             ExitCode::SUCCESS
         }
         Err(error) => {
