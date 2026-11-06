@@ -15,7 +15,7 @@ pub fn parse(argument: &str) -> Result<Query> {
     potential
         .actualize(&mut Budget {
             remaining: 1_024,
-            reader: ReaderBudget { remaining: 1_024 },
+            reader: ReaderBudget::try_from(1_024).expect("the reader budget is within range"),
             depth: 0,
             maximum_depth: 1_024,
         })

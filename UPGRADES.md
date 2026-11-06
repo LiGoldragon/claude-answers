@@ -1,5 +1,15 @@
 # Upgrades
 
+## 0.10.0 — Protos 0.33.0
+
+Repins Protos 0.33.0 (3c7a), Datom-codec 0.33.0 (eabe) and Ethos Zero 19.2.0 (5a5d, the dev dependency that checks the generated module). Datom-codec is spelled `rev = "eabead4"` and Protos `rev = "3c7ade3"`, as Ethos Zero spells them, so the lock holds one source of each.
+
+What breaks: Protos 0.33.0 makes `ReaderBudget` fields private; the query parser builds it with `ReaderBudget::try_from`. A consumer of this crate's library sees no API change. The generated module differs only in its header, which adds `clippy::type_complexity` to the crate-level allow.
+
+The Rust toolchain is selected by version, `1.99.1`, in place of the floating `stable`, and the flake's toolchain hash is the manifest hash of that release, because the old hash named a `stable` manifest that is no longer served.
+
+To deploy: repin claude-answers 0.10.0 in the consumer and rebuild; no data migration.
+
 ## 0.9.0 — rkyv-archived generated types
 
 Version 0.9.0 repins to Ethos Zero 16.0.0, Protos 0.32.2 and Datom-codec
